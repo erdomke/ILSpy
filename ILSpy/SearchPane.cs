@@ -32,6 +32,7 @@ using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.Utils;
 using Mono.Cecil;
 using Mono.Cecil.Cil;
+using System.Collections.Generic;
 
 namespace ICSharpCode.ILSpy
 {
@@ -190,6 +191,7 @@ namespace ICSharpCode.ILSpy
 			readonly CancellationTokenSource cts = new CancellationTokenSource();
 			readonly LoadedAssembly[] assemblies;
 			readonly string[] searchTerm;
+      readonly bool searchNamespace;
 			readonly int searchMode;
 			readonly Language language;
 			public readonly ObservableCollection<SearchResult> Results = new ObservableCollection<SearchResult>();
@@ -203,10 +205,11 @@ namespace ICSharpCode.ILSpy
 				this.dispatcher = Dispatcher.CurrentDispatcher;
 				this.assemblies = assemblies;
 				this.searchTerm = searchTerm.Split(new char[] {' '}, StringSplitOptions.RemoveEmptyEntries);
+        this.searchNamespace = searchTerm.IndexOf('.') >= 0;
 				this.language = language;
 				this.searchMode = searchMode;
 				
-				this.Results.Add(new SearchResult { Name = "Searching..." });
+				this.Results.Add(new SearchResult { Name = "Searching...", SortKey = "ZZZZZZZZZZZZZZ" });
 			}
 			
 			public void Cancel()
@@ -274,29 +277,73 @@ namespace ICSharpCode.ILSpy
 				}
 				dispatcher.BeginInvoke(
 					DispatcherPriority.Normal,
-					new Action(delegate { this.Results.Insert(this.Results.Count - 1, result); }));
+					new Action(delegate {
+            int pos = BinarySearch(this.Results, r => r.SortKey, result.SortKey);
+
+            if (pos >= 0)
+            {
+              this.Results.Insert(pos + 1, result);
+            }
+            else
+            {
+              this.Results.Insert(~pos, result);
+            }
+          }));
 				cts.Token.ThrowIfCancellationRequested();
 			}
 			
-			bool IsMatch(string text)
+			bool IsMatch(string text, out string sortKey)
 			{
+        int pos;
+        int startMatch = int.MaxValue;
+
+        sortKey = text;
 			  for (int i = 0; i < searchTerm.Length; ++i) {
 			    // How to handle overlapping matches?
-			    if (text.IndexOf(searchTerm[i], StringComparison.OrdinalIgnoreCase) < 0)
+          pos = text.IndexOf(searchTerm[i], StringComparison.OrdinalIgnoreCase);
+          if (pos == 0)
+          {
+            if (i < startMatch) startMatch = i;
+          }
+          else if (pos < 0)
+          {
 			      return false;
+          }
 			  }
+
+        if (startMatch < int.MaxValue)
+        {
+          startMatch = Math.Max(10 - startMatch, 0);
+          sortKey = new string('*', startMatch) + sortKey;
+        }
+
   			return true;
 			}
 			
 			void PerformSearch(TypeDefinition type)
 			{
-				if (searchMode == SearchMode_Type && IsMatch(type.Name)) {
+        string sortKey;
+
+        if (searchMode == SearchMode_Type && IsMatch(type, out sortKey))
+        {
+          var name = language.TypeToString(type, includeNamespace: false);
+          // If the name differs from the type name (nested type), remove an asterisk (move it down one
+          // level in the sort) and use the rendered name as the sort key
+          if (!searchNamespace && type.DeclaringType != null)
+          {
+            int i = 0;
+            while (i < sortKey.Length && sortKey[i] == '*') i++;
+            i = Math.Max(i - 1, 0);
+            sortKey = new string('*', i) + name;
+          };
+
 					AddResult(new SearchResult {
-					          	Member = type,
+					          	Member = type,  
 					          	Image = TypeTreeNode.GetIcon(type),
-					          	Name = language.TypeToString(type, includeNamespace: false),
+                      Name = name,
 					          	LocationImage = type.DeclaringType != null ? TypeTreeNode.GetIcon(type.DeclaringType) : Images.Namespace,
-					          	Location = type.DeclaringType != null ? language.TypeToString(type.DeclaringType, includeNamespace: true) : type.Namespace
+					          	Location = type.DeclaringType != null ? language.TypeToString(type.DeclaringType, includeNamespace: true) : type.Namespace,
+                      SortKey = sortKey
 					          });
 				}
 				
@@ -308,35 +355,38 @@ namespace ICSharpCode.ILSpy
 					return;
 				
 				foreach (FieldDefinition field in type.Fields) {
-					if (IsMatch(field)) {
+					if (IsMatch(field, out sortKey)) {
 						AddResult(new SearchResult {
 						          	Member = field,
 						          	Image = FieldTreeNode.GetIcon(field),
 						          	Name = field.Name,
 						          	LocationImage = TypeTreeNode.GetIcon(type),
-						          	Location = language.TypeToString(type, includeNamespace: true)
+						          	Location = language.TypeToString(type, includeNamespace: true),
+                        SortKey = sortKey
 						          });
 					}
 				}
 				foreach (PropertyDefinition property in type.Properties) {
-					if (IsMatch(property)) {
+					if (IsMatch(property, out sortKey)) {
 						AddResult(new SearchResult {
 						          	Member = property,
 						          	Image = PropertyTreeNode.GetIcon(property),
 						          	Name = property.Name,
 						          	LocationImage = TypeTreeNode.GetIcon(type),
-						          	Location = language.TypeToString(type, includeNamespace: true)
+						          	Location = language.TypeToString(type, includeNamespace: true),
+                        SortKey = sortKey
 						          });
 					}
 				}
 				foreach (EventDefinition ev in type.Events) {
-					if (IsMatch(ev)) {
+					if (IsMatch(ev, out sortKey)) {
 						AddResult(new SearchResult {
 						          	Member = ev,
 						          	Image = EventTreeNode.GetIcon(ev),
 						          	Name = ev.Name,
 						          	LocationImage = TypeTreeNode.GetIcon(type),
-						          	Location = language.TypeToString(type, includeNamespace: true)
+						          	Location = language.TypeToString(type, includeNamespace: true),
+                        SortKey = sortKey
 						          });
 					}
 				}
@@ -349,54 +399,94 @@ namespace ICSharpCode.ILSpy
 						case MethodSemanticsAttributes.Fire:
 							continue;
 					}
-					if (IsMatch(method)) {
+					if (IsMatch(method, out sortKey)) {
 						AddResult(new SearchResult {
 						          	Member = method,
 						          	Image = MethodTreeNode.GetIcon(method),
 						          	Name = method.Name,
 						          	LocationImage = TypeTreeNode.GetIcon(type),
-						          	Location = language.TypeToString(type, includeNamespace: true)
+						          	Location = language.TypeToString(type, includeNamespace: true),
+                        SortKey = sortKey
 						          });
 					}
 				}
 			}
-			
-			bool IsMatch(FieldDefinition field)
+
+      bool IsMatch(TypeDefinition type, out string sortKey)
+      {
+        if (searchNamespace)
+        {
+          return IsMatch(type.FullName, out sortKey);
+        }
+        else
+        {
+          return IsMatch(type.Name, out sortKey);
+        }
+      }
+			bool IsMatch(FieldDefinition field, out string sortKey)
 			{
 				if (searchMode == SearchMode_Literal)
-					return IsLiteralMatch(field.Constant);
+          return IsLiteralMatch(field.Constant, out sortKey);
+        else if (searchNamespace)
+        {
+          return IsMatch(field.DeclaringType.FullName + "." + field.Name, out sortKey);
+        }
 				else
-					return IsMatch(field.Name);
+					return IsMatch(field.Name, out sortKey);
+			}
+
+      bool IsMatch(PropertyDefinition property, out string sortKey)
+			{
+        if (searchMode == SearchMode_Literal)
+        {
+          sortKey = property.Name;
+          return MethodIsLiteralMatch(property.GetMethod) || MethodIsLiteralMatch(property.SetMethod);
+        }
+        else if (searchNamespace)
+        {
+          return IsMatch(property.DeclaringType.FullName + "." + property.Name, out sortKey);
+        }
+        else
+          return IsMatch(property.Name, out sortKey);
 			}
 			
-			bool IsMatch(PropertyDefinition property)
+			bool IsMatch(EventDefinition ev, out string sortKey)
 			{
 				if (searchMode == SearchMode_Literal)
-					return MethodIsLiteralMatch(property.GetMethod) || MethodIsLiteralMatch(property.SetMethod);
-				else
-					return IsMatch(property.Name);
-			}
-			
-			bool IsMatch(EventDefinition ev)
-			{
-				if (searchMode == SearchMode_Literal)
+        {
+          sortKey = ev.Name;
 					return MethodIsLiteralMatch(ev.AddMethod) || MethodIsLiteralMatch(ev.RemoveMethod) || MethodIsLiteralMatch(ev.InvokeMethod);
-				else
-					return IsMatch(ev.Name);
+        }
+        else if (searchNamespace)
+        {
+          return IsMatch(ev.DeclaringType.FullName + "." + ev.Name, out sortKey);
+        }
+        else
+					return IsMatch(ev.Name, out sortKey);
 			}
-			
-			bool IsMatch(MethodDefinition m)
+
+      bool IsMatch(MethodDefinition m, out string sortKey)
 			{
 				if (searchMode == SearchMode_Literal)
+        {
+          sortKey = m.Name;
 					return MethodIsLiteralMatch(m);
-				else
-					return IsMatch(m.Name);
+        }
+				else if (searchNamespace)
+        {
+          return IsMatch(m.DeclaringType.FullName + "." + m.Name, out sortKey);
+        }
+        else 
+					return IsMatch(m.Name, out sortKey);
 			}
 			
-			bool IsLiteralMatch(object val)
+			bool IsLiteralMatch(object val, out string sortKey)
 			{
-				if (val == null)
+        sortKey = "";
+        if (val == null)
 					return false;
+
+        sortKey = val.ToString();
 				switch (searchTermLiteralType) {
 					case TypeCode.Int64:
 						TypeCode tc = Type.GetTypeCode(val.GetType());
@@ -410,7 +500,7 @@ namespace ICSharpCode.ILSpy
 						return searchTermLiteralValue.Equals(val);
 					default:
 						// substring search with searchTerm
-						return IsMatch(val.ToString());
+            return IsMatch(val.ToString(), out sortKey);
 				}
 			}
 			
@@ -499,8 +589,9 @@ namespace ICSharpCode.ILSpy
 							return true;
 					}
 				} else {
+          string sortKey;
 					foreach (var inst in body.Instructions) {
-						if (inst.OpCode.Code == Code.Ldstr && IsMatch((string)inst.Operand))
+            if (inst.OpCode.Code == Code.Ldstr && IsMatch((string)inst.Operand, out sortKey))
 							return true;
 					}
 				}
@@ -521,12 +612,67 @@ namespace ICSharpCode.ILSpy
 			public string Name { get; set; }
 			public ImageSource Image { get; set; }
 			public ImageSource LocationImage { get; set; }
+      public string SortKey { get; set; }
 			
 			public override string ToString()
 			{
 				return Name;
 			}
 		}
+
+    private static int BinarySearch<T, TKey>(IList<T> list, Func<T, TKey> keySelector, TKey key) where TKey : IComparable<TKey>
+    {
+      if (list == null || list.Count == 0)
+      {
+        return -1;
+      }
+      else
+      {
+        int compare;
+        int max = list.Count - 1;
+        int mid;
+        int min = 0;
+        
+        while (min <= max)
+        {
+          mid = min + ((max - min) >> 1);
+
+          var listKey = keySelector(list[mid]);
+          if (listKey == null && key == null)
+          {
+            compare = 0;
+          }
+          else if (listKey == null)
+          {
+            compare = -1;
+          }
+          else if (key == null)
+          {
+            compare = 1;
+          }
+          else
+          {
+            compare = keySelector(list[mid]).CompareTo(key);
+          }
+          
+          if (compare == 0)
+          {
+            return mid;
+          }
+          else if (compare < 0)
+          {
+            min = mid + 1;
+          }
+          else
+          {
+            max = mid - 1;
+          }
+
+        }
+
+        return ~min;
+      }
+    }
 	}
 
 	[ExportMainMenuCommand(Menu = "_View", Header = "_Search", MenuIcon="Images/Find.png", MenuCategory = "ShowPane", MenuOrder = 100)]

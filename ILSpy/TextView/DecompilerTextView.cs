@@ -421,6 +421,615 @@ namespace ICSharpCode.ILSpy.TextView
 			}
 		}
 		
+    private class ReferenceVisitor : NRefactory.CSharp.IAstVisitor
+    {
+
+      public void VisitAnonymousMethodExpression(NRefactory.CSharp.AnonymousMethodExpression anonymousMethodExpression)
+      {
+        
+        throw new NotImplementedException();
+      }
+
+      public void VisitUndocumentedExpression(NRefactory.CSharp.UndocumentedExpression undocumentedExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitArrayCreateExpression(NRefactory.CSharp.ArrayCreateExpression arrayCreateExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitArrayInitializerExpression(NRefactory.CSharp.ArrayInitializerExpression arrayInitializerExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitAsExpression(NRefactory.CSharp.AsExpression asExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitAssignmentExpression(NRefactory.CSharp.AssignmentExpression assignmentExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitBaseReferenceExpression(NRefactory.CSharp.BaseReferenceExpression baseReferenceExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitBinaryOperatorExpression(NRefactory.CSharp.BinaryOperatorExpression binaryOperatorExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitCastExpression(NRefactory.CSharp.CastExpression castExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitCheckedExpression(NRefactory.CSharp.CheckedExpression checkedExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitConditionalExpression(NRefactory.CSharp.ConditionalExpression conditionalExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitDefaultValueExpression(NRefactory.CSharp.DefaultValueExpression defaultValueExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitDirectionExpression(NRefactory.CSharp.DirectionExpression directionExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitIdentifierExpression(NRefactory.CSharp.IdentifierExpression identifierExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitIndexerExpression(NRefactory.CSharp.IndexerExpression indexerExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitInvocationExpression(NRefactory.CSharp.InvocationExpression invocationExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitIsExpression(NRefactory.CSharp.IsExpression isExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitLambdaExpression(NRefactory.CSharp.LambdaExpression lambdaExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitMemberReferenceExpression(NRefactory.CSharp.MemberReferenceExpression memberReferenceExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitNamedArgumentExpression(NRefactory.CSharp.NamedArgumentExpression namedArgumentExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitNamedExpression(NRefactory.CSharp.NamedExpression namedExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitNullReferenceExpression(NRefactory.CSharp.NullReferenceExpression nullReferenceExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitObjectCreateExpression(NRefactory.CSharp.ObjectCreateExpression objectCreateExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitAnonymousTypeCreateExpression(NRefactory.CSharp.AnonymousTypeCreateExpression anonymousTypeCreateExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitParenthesizedExpression(NRefactory.CSharp.ParenthesizedExpression parenthesizedExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitPointerReferenceExpression(NRefactory.CSharp.PointerReferenceExpression pointerReferenceExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitPrimitiveExpression(NRefactory.CSharp.PrimitiveExpression primitiveExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitSizeOfExpression(NRefactory.CSharp.SizeOfExpression sizeOfExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitStackAllocExpression(NRefactory.CSharp.StackAllocExpression stackAllocExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitThisReferenceExpression(NRefactory.CSharp.ThisReferenceExpression thisReferenceExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitTypeOfExpression(NRefactory.CSharp.TypeOfExpression typeOfExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitTypeReferenceExpression(NRefactory.CSharp.TypeReferenceExpression typeReferenceExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitUnaryOperatorExpression(NRefactory.CSharp.UnaryOperatorExpression unaryOperatorExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitUncheckedExpression(NRefactory.CSharp.UncheckedExpression uncheckedExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitEmptyExpression(NRefactory.CSharp.EmptyExpression emptyExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitQueryExpression(NRefactory.CSharp.QueryExpression queryExpression)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitQueryContinuationClause(NRefactory.CSharp.QueryContinuationClause queryContinuationClause)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitQueryFromClause(NRefactory.CSharp.QueryFromClause queryFromClause)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitQueryLetClause(NRefactory.CSharp.QueryLetClause queryLetClause)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitQueryWhereClause(NRefactory.CSharp.QueryWhereClause queryWhereClause)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitQueryJoinClause(NRefactory.CSharp.QueryJoinClause queryJoinClause)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitQueryOrderClause(NRefactory.CSharp.QueryOrderClause queryOrderClause)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitQueryOrdering(NRefactory.CSharp.QueryOrdering queryOrdering)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitQuerySelectClause(NRefactory.CSharp.QuerySelectClause querySelectClause)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitQueryGroupClause(NRefactory.CSharp.QueryGroupClause queryGroupClause)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitAttribute(NRefactory.CSharp.Attribute attribute)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitAttributeSection(NRefactory.CSharp.AttributeSection attributeSection)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitDelegateDeclaration(NRefactory.CSharp.DelegateDeclaration delegateDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitNamespaceDeclaration(NRefactory.CSharp.NamespaceDeclaration namespaceDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitTypeDeclaration(NRefactory.CSharp.TypeDeclaration typeDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitUsingAliasDeclaration(NRefactory.CSharp.UsingAliasDeclaration usingAliasDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitUsingDeclaration(NRefactory.CSharp.UsingDeclaration usingDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitExternAliasDeclaration(NRefactory.CSharp.ExternAliasDeclaration externAliasDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitBlockStatement(NRefactory.CSharp.BlockStatement blockStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitBreakStatement(NRefactory.CSharp.BreakStatement breakStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitCheckedStatement(NRefactory.CSharp.CheckedStatement checkedStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitContinueStatement(NRefactory.CSharp.ContinueStatement continueStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitDoWhileStatement(NRefactory.CSharp.DoWhileStatement doWhileStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitEmptyStatement(NRefactory.CSharp.EmptyStatement emptyStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitExpressionStatement(NRefactory.CSharp.ExpressionStatement expressionStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitFixedStatement(NRefactory.CSharp.FixedStatement fixedStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitForeachStatement(NRefactory.CSharp.ForeachStatement foreachStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitForStatement(NRefactory.CSharp.ForStatement forStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitGotoCaseStatement(NRefactory.CSharp.GotoCaseStatement gotoCaseStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitGotoDefaultStatement(NRefactory.CSharp.GotoDefaultStatement gotoDefaultStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitGotoStatement(NRefactory.CSharp.GotoStatement gotoStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitIfElseStatement(NRefactory.CSharp.IfElseStatement ifElseStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitLabelStatement(NRefactory.CSharp.LabelStatement labelStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitLockStatement(NRefactory.CSharp.LockStatement lockStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitReturnStatement(NRefactory.CSharp.ReturnStatement returnStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitSwitchStatement(NRefactory.CSharp.SwitchStatement switchStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitSwitchSection(NRefactory.CSharp.SwitchSection switchSection)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitCaseLabel(NRefactory.CSharp.CaseLabel caseLabel)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitThrowStatement(NRefactory.CSharp.ThrowStatement throwStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitTryCatchStatement(NRefactory.CSharp.TryCatchStatement tryCatchStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitCatchClause(NRefactory.CSharp.CatchClause catchClause)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitUncheckedStatement(NRefactory.CSharp.UncheckedStatement uncheckedStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitUnsafeStatement(NRefactory.CSharp.UnsafeStatement unsafeStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitUsingStatement(NRefactory.CSharp.UsingStatement usingStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitVariableDeclarationStatement(NRefactory.CSharp.VariableDeclarationStatement variableDeclarationStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitWhileStatement(NRefactory.CSharp.WhileStatement whileStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitYieldBreakStatement(NRefactory.CSharp.YieldBreakStatement yieldBreakStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitYieldReturnStatement(NRefactory.CSharp.YieldReturnStatement yieldReturnStatement)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitAccessor(NRefactory.CSharp.Accessor accessor)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitConstructorDeclaration(NRefactory.CSharp.ConstructorDeclaration constructorDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitConstructorInitializer(NRefactory.CSharp.ConstructorInitializer constructorInitializer)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitDestructorDeclaration(NRefactory.CSharp.DestructorDeclaration destructorDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitEnumMemberDeclaration(NRefactory.CSharp.EnumMemberDeclaration enumMemberDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitEventDeclaration(NRefactory.CSharp.EventDeclaration eventDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitCustomEventDeclaration(NRefactory.CSharp.CustomEventDeclaration customEventDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitFieldDeclaration(NRefactory.CSharp.FieldDeclaration fieldDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitIndexerDeclaration(NRefactory.CSharp.IndexerDeclaration indexerDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitMethodDeclaration(NRefactory.CSharp.MethodDeclaration methodDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitOperatorDeclaration(NRefactory.CSharp.OperatorDeclaration operatorDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitParameterDeclaration(NRefactory.CSharp.ParameterDeclaration parameterDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitPropertyDeclaration(NRefactory.CSharp.PropertyDeclaration propertyDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitVariableInitializer(NRefactory.CSharp.VariableInitializer variableInitializer)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitFixedFieldDeclaration(NRefactory.CSharp.FixedFieldDeclaration fixedFieldDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitFixedVariableInitializer(NRefactory.CSharp.FixedVariableInitializer fixedVariableInitializer)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitSyntaxTree(NRefactory.CSharp.SyntaxTree syntaxTree)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitSimpleType(NRefactory.CSharp.SimpleType simpleType)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitMemberType(NRefactory.CSharp.MemberType memberType)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitComposedType(NRefactory.CSharp.ComposedType composedType)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitArraySpecifier(NRefactory.CSharp.ArraySpecifier arraySpecifier)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitPrimitiveType(NRefactory.CSharp.PrimitiveType primitiveType)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitComment(NRefactory.CSharp.Comment comment)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitNewLine(NRefactory.CSharp.NewLineNode newLineNode)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitWhitespace(NRefactory.CSharp.WhitespaceNode whitespaceNode)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitText(NRefactory.CSharp.TextNode textNode)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitPreProcessorDirective(NRefactory.CSharp.PreProcessorDirective preProcessorDirective)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitDocumentationReference(NRefactory.CSharp.DocumentationReference documentationReference)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitTypeParameterDeclaration(NRefactory.CSharp.TypeParameterDeclaration typeParameterDeclaration)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitConstraint(NRefactory.CSharp.Constraint constraint)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitCSharpTokenNode(NRefactory.CSharp.CSharpTokenNode cSharpTokenNode)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitIdentifier(NRefactory.CSharp.Identifier identifier)
+      {
+        throw new NotImplementedException();
+      }
+
+      public void VisitPatternPlaceholder(NRefactory.CSharp.AstNode placeholder, NRefactory.PatternMatching.Pattern pattern)
+      {
+        throw new NotImplementedException();
+      }
+    }
+
+    public void DisplayText(string text, Language lang)
+    {
+      AvalonEditTextOutput textOutput = new AvalonEditTextOutput();
+      //textOutput.LengthLimit = outputLengthLimit;
+      //DecompileNodes(context, textOutput);
+
+      //var parser2 = new NRefactory.VB.VBParser();
+      //parser2.Parse(text).AcceptVisitor;
+
+
+
+      var parser = new NRefactory.CSharp.CSharpParser();
+      var output = parser.Parse(text);
+      foreach (var type in output.Descendants.OfType<NRefactory.CSharp.AstType>()) 
+      {
+        Debug.Print("{0} <{3}>: {1} -> {2}", type.ToString(), type.StartLocation, type.EndLocation, type.GetType().Name);
+      }
+      
+
+      textOutput.Write(text);
+      textOutput.PrepareDocument();
+      ShowOutput(textOutput, lang.SyntaxHighlighting, null);
+    }
+
 		Task DoDecompile(DecompilationContext context, int outputLengthLimit)
 		{
 			return RunWithCancellation(

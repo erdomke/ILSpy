@@ -30,252 +30,298 @@ using Mono.Cecil;
 
 namespace ICSharpCode.ILSpy.TreeNodes
 {
-	/// <summary>
-	/// Tree node representing an assembly.
-	/// This class is responsible for loading both namespace and type nodes.
-	/// </summary>
-	public sealed class AssemblyTreeNode : ILSpyTreeNode
-	{
-		readonly LoadedAssembly assembly;
-		readonly Dictionary<string, NamespaceTreeNode> namespaces = new Dictionary<string, NamespaceTreeNode>();
+  /// <summary>
+  /// Tree node representing an assembly.
+  /// This class is responsible for loading both namespace and type nodes.
+  /// </summary>
+  public sealed class AssemblyTreeNode : ILSpyTreeNode
+  {
+    readonly LoadedAssembly assembly;
+    readonly Dictionary<string, NamespaceTreeNode> namespaces = new Dictionary<string, NamespaceTreeNode>();
 
-		public AssemblyTreeNode(LoadedAssembly assembly)
-		{
-			if (assembly == null)
-				throw new ArgumentNullException("assembly");
+    public AssemblyTreeNode(LoadedAssembly assembly)
+    {
+      if (assembly == null)
+        throw new ArgumentNullException("assembly");
 
-			this.assembly = assembly;
+      this.assembly = assembly;
 
-			assembly.ContinueWhenLoaded(OnAssemblyLoaded, TaskScheduler.FromCurrentSynchronizationContext());
+      assembly.ContinueWhenLoaded(OnAssemblyLoaded, TaskScheduler.FromCurrentSynchronizationContext());
 
-			this.LazyLoading = true;
-		}
+      this.LazyLoading = true;
+    }
 
-		public AssemblyList AssemblyList
-		{
-			get { return assembly.AssemblyList; }
-		}
+    public AssemblyList AssemblyList
+    {
+      get { return assembly.AssemblyList; }
+    }
 
-		public LoadedAssembly LoadedAssembly
-		{
-			get { return assembly; }
-		}
+    public LoadedAssembly LoadedAssembly
+    {
+      get { return assembly; }
+    }
 
-		public override object Text
-		{
-			get { return HighlightSearchMatch(assembly.ShortName); }
-		}
+    public override object Text
+    {
+      get { return HighlightSearchMatch(assembly.ShortName); }
+    }
 
-		public override object Icon
-		{
-			get
-			{
-				if (assembly.IsLoaded) {
-					return assembly.HasLoadError ? Images.AssemblyWarning : Images.Assembly;
-				} else {
-					return Images.AssemblyLoading;
-				}
-			}
-		}
+    public override object Icon
+    {
+      get
+      {
+        if (assembly.IsLoaded) {
+          return assembly.HasLoadError ? Images.AssemblyWarning : Images.Assembly;
+        } else {
+          return Images.AssemblyLoading;
+        }
+      }
+    }
 
-		public override bool ShowExpander
-		{
-			get { return !assembly.HasLoadError; }
-		}
+    public override bool ShowExpander
+    {
+      get { return !assembly.HasLoadError; }
+    }
 
-		void OnAssemblyLoaded(Task<ModuleDefinition> moduleTask)
-		{
-			// change from "Loading" icon to final icon
-			RaisePropertyChanged("Icon");
-			RaisePropertyChanged("ExpandedIcon");
-			if (moduleTask.IsFaulted) {
-				RaisePropertyChanged("ShowExpander"); // cannot expand assemblies with load error
-				// observe the exception so that the Task's finalizer doesn't re-throw it
-				try { moduleTask.Wait(); }
-				catch (AggregateException) { }
-			} else {
-				RaisePropertyChanged("Text"); // shortname might have changed
-			}
-		}
+    void OnAssemblyLoaded(Task<ModuleDefinition> moduleTask)
+    {
+      // change from "Loading" icon to final icon
+      RaisePropertyChanged("Icon");
+      RaisePropertyChanged("ExpandedIcon");
+      if (moduleTask.IsFaulted) {
+        RaisePropertyChanged("ShowExpander"); // cannot expand assemblies with load error
+        // observe the exception so that the Task's finalizer doesn't re-throw it
+        try { moduleTask.Wait(); }
+        catch (AggregateException) { }
+      } else {
+        RaisePropertyChanged("Text"); // shortname might have changed
+      }
+    }
 
-		readonly Dictionary<TypeDefinition, TypeTreeNode> typeDict = new Dictionary<TypeDefinition, TypeTreeNode>();
+    readonly Dictionary<TypeDefinition, TypeTreeNode> typeDict = new Dictionary<TypeDefinition, TypeTreeNode>();
 
-		protected override void LoadChildren()
-		{
-			ModuleDefinition moduleDefinition = assembly.ModuleDefinition;
-			if (moduleDefinition == null) {
-				// if we crashed on loading, then we don't have any children
-				return;
-			}
+    protected override void LoadChildren()
+    {
+      ModuleDefinition moduleDefinition = assembly.ModuleDefinition;
+      if (moduleDefinition == null) {
+        // if we crashed on loading, then we don't have any children
+        return;
+      }
 
-			this.Children.Add(new ReferenceFolderTreeNode(moduleDefinition, this));
-			if (moduleDefinition.HasResources)
-				this.Children.Add(new ResourceListTreeNode(moduleDefinition));
-			foreach (NamespaceTreeNode ns in namespaces.Values) {
-				ns.Children.Clear();
-			}
-			foreach (TypeDefinition type in moduleDefinition.Types.OrderBy(t => t.FullName)) {
-				NamespaceTreeNode ns;
-				if (!namespaces.TryGetValue(type.Namespace, out ns)) {
-					ns = new NamespaceTreeNode(type.Namespace);
-					namespaces[type.Namespace] = ns;
-				}
-				TypeTreeNode node = new TypeTreeNode(type, this);
-				typeDict[type] = node;
-				ns.Children.Add(node);
-			}
-			foreach (NamespaceTreeNode ns in namespaces.Values.OrderBy(n => n.Name)) {
-				if (ns.Children.Count > 0)
-					this.Children.Add(ns);
-			}
-		}
-		
-		public override bool CanExpandRecursively {
-			get { return true; }
-		}
+      this.Children.Add(new ReferenceFolderTreeNode(moduleDefinition, this));
+      if (moduleDefinition.HasResources)
+        this.Children.Add(new ResourceListTreeNode(moduleDefinition));
+      foreach (NamespaceTreeNode ns in namespaces.Values) {
+        ns.Children.Clear();
+      }
+      foreach (TypeDefinition type in moduleDefinition.Types.OrderBy(t => t.FullName)) {
+        NamespaceTreeNode ns;
+        if (!namespaces.TryGetValue(type.Namespace, out ns)) {
+          ns = new NamespaceTreeNode(type.Namespace);
+          namespaces[type.Namespace] = ns;
+        }
+        TypeTreeNode node = new TypeTreeNode(type, this);
+        typeDict[type] = node;
+        ns.Children.Add(node);
+      }
+      foreach (NamespaceTreeNode ns in namespaces.Values.OrderBy(n => n.Name)) {
+        if (ns.Children.Count > 0)
+          this.Children.Add(ns);
+      }
+    }
+    
+    public override bool CanExpandRecursively {
+      get { return true; }
+    }
 
-		/// <summary>
-		/// Finds the node for a top-level type.
-		/// </summary>
-		public TypeTreeNode FindTypeNode(TypeDefinition def)
-		{
-			if (def == null)
-				return null;
-			EnsureLazyChildren();
-			TypeTreeNode node;
-			if (typeDict.TryGetValue(def, out node))
-				return node;
-			else
-				return null;
-		}
+    /// <summary>
+    /// Finds the node for a top-level type.
+    /// </summary>
+    public TypeTreeNode FindTypeNode(TypeDefinition def)
+    {
+      if (def == null)
+        return null;
+      EnsureLazyChildren();
+      TypeTreeNode node;
+      if (typeDict.TryGetValue(def, out node))
+        return node;
+      else
+        return null;
+    }
 
-		/// <summary>
-		/// Finds the node for a namespace.
-		/// </summary>
-		public NamespaceTreeNode FindNamespaceNode(string namespaceName)
-		{
-			if (string.IsNullOrEmpty(namespaceName))
-				return null;
-			EnsureLazyChildren();
-			NamespaceTreeNode node;
-			if (namespaces.TryGetValue(namespaceName, out node))
-				return node;
-			else
-				return null;
-		}
-		
-		public override bool CanDrag(SharpTreeNode[] nodes)
-		{
-			return nodes.All(n => n is AssemblyTreeNode);
-		}
+    /// <summary>
+    /// Finds the node for a namespace.
+    /// </summary>
+    public NamespaceTreeNode FindNamespaceNode(string namespaceName)
+    {
+      if (string.IsNullOrEmpty(namespaceName))
+        return null;
+      EnsureLazyChildren();
+      NamespaceTreeNode node;
+      if (namespaces.TryGetValue(namespaceName, out node))
+        return node;
+      else
+        return null;
+    }
+    
+    public override bool CanDrag(SharpTreeNode[] nodes)
+    {
+      return nodes.All(n => n is AssemblyTreeNode);
+    }
 
-		public override void StartDrag(DependencyObject dragSource, SharpTreeNode[] nodes)
-		{
-			DragDrop.DoDragDrop(dragSource, Copy(nodes), DragDropEffects.All);
-		}
+    public override void StartDrag(DependencyObject dragSource, SharpTreeNode[] nodes)
+    {
+      DragDrop.DoDragDrop(dragSource, Copy(nodes), DragDropEffects.All);
+    }
 
-		public override bool CanDelete()
-		{
-			return true;
-		}
+    public override bool CanDelete()
+    {
+      return true;
+    }
 
-		public override void Delete()
-		{
-			DeleteCore();
-		}
+    public override void Delete()
+    {
+      DeleteCore();
+    }
 
-		public override void DeleteCore()
-		{
-			assembly.AssemblyList.Unload(assembly);
-		}
+    public override void DeleteCore()
+    {
+      assembly.AssemblyList.Unload(assembly);
+    }
 
-		internal const string DataFormat = "ILSpyAssemblies";
+    internal const string DataFormat = "ILSpyAssemblies";
 
-		public override IDataObject Copy(SharpTreeNode[] nodes)
-		{
-			DataObject dataObject = new DataObject();
-			dataObject.SetData(DataFormat, nodes.OfType<AssemblyTreeNode>().Select(n => n.LoadedAssembly.FileName).ToArray());
-			return dataObject;
-		}
+    public override IDataObject Copy(SharpTreeNode[] nodes)
+    {
+      DataObject dataObject = new DataObject();
+      dataObject.SetData(DataFormat, nodes.OfType<AssemblyTreeNode>().Select(n => n.LoadedAssembly.FileName).ToArray());
+      return dataObject;
+    }
 
-		public override FilterResult Filter(FilterSettings settings)
-		{
-			if (settings.SearchTermMatches(assembly.ShortName))
-				return FilterResult.Match;
-			else
-				return FilterResult.Recurse;
-		}
+    public override FilterResult Filter(FilterSettings settings)
+    {
+      if (settings.SearchTermMatches(assembly.ShortName))
+        return FilterResult.Match;
+      else
+        return FilterResult.Recurse;
+    }
 
-		public override void Decompile(Language language, ITextOutput output, DecompilationOptions options)
-		{
-			try {
-				assembly.WaitUntilLoaded(); // necessary so that load errors are passed on to the caller
-			} catch (AggregateException ex) {
-				language.WriteCommentLine(output, assembly.FileName);
-				if (ex.InnerException is BadImageFormatException) {
-					language.WriteCommentLine(output, "This file does not contain a managed assembly.");
-					return;
-				} else {
-					throw;
-				}
-			}
-			language.DecompileAssembly(assembly, output, options);
-		}
+    public override void Decompile(Language language, ITextOutput output, DecompilationOptions options)
+    {
+      try {
+        assembly.WaitUntilLoaded(); // necessary so that load errors are passed on to the caller
+      } catch (AggregateException ex) {
+        language.WriteCommentLine(output, assembly.FileName);
+        if (ex.InnerException is BadImageFormatException) {
+          language.WriteCommentLine(output, "This file does not contain a managed assembly.");
+          return;
+        } else {
+          throw;
+        }
+      }
+      language.DecompileAssembly(assembly, output, options);
+    }
 
-		public override bool Save(DecompilerTextView textView)
-		{
-			Language language = this.Language;
-			if (string.IsNullOrEmpty(language.ProjectFileExtension))
-				return false;
-			SaveFileDialog dlg = new SaveFileDialog();
-			dlg.FileName = DecompilerTextView.CleanUpName(assembly.ShortName) + language.ProjectFileExtension;
-			dlg.Filter = language.Name + " project|*" + language.ProjectFileExtension + "|" + language.Name + " single file|*" + language.FileExtension + "|All files|*.*";
-			if (dlg.ShowDialog() == true) {
-				DecompilationOptions options = new DecompilationOptions();
-				options.FullDecompilation = true;
-				if (dlg.FilterIndex == 1) {
-					options.SaveAsProjectDirectory = Path.GetDirectoryName(dlg.FileName);
-					foreach (string entry in Directory.GetFileSystemEntries(options.SaveAsProjectDirectory)) {
-						if (!string.Equals(entry, dlg.FileName, StringComparison.OrdinalIgnoreCase)) {
-							var result = MessageBox.Show(
-								"The directory is not empty. File will be overwritten." + Environment.NewLine +
-								"Are you sure you want to continue?",
-								"Project Directory not empty",
-								MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
-							if (result == MessageBoxResult.No)
-								return true; // don't save, but mark the Save operation as handled
-							break;
-						}
-					}
-				}
-				textView.SaveToDisk(language, new[] { this }, options, dlg.FileName);
-			}
-			return true;
-		}
-	}
+    public override bool Save(DecompilerTextView textView)
+    {
+      Language language = this.Language;
+      if (string.IsNullOrEmpty(language.ProjectFileExtension))
+        return false;
+      SaveFileDialog dlg = new SaveFileDialog();
+      dlg.FileName = DecompilerTextView.CleanUpName(assembly.ShortName) + language.ProjectFileExtension;
+      dlg.Filter = language.Name + " project|*" + language.ProjectFileExtension + "|" + language.Name + " single file|*" + language.FileExtension + "|All files|*.*";
+      if (dlg.ShowDialog() == true) {
+        DecompilationOptions options = new DecompilationOptions();
+        options.FullDecompilation = true;
+        if (dlg.FilterIndex == 1) {
+          options.SaveAsProjectDirectory = Path.GetDirectoryName(dlg.FileName);
+          foreach (string entry in Directory.GetFileSystemEntries(options.SaveAsProjectDirectory)) {
+            if (!string.Equals(entry, dlg.FileName, StringComparison.OrdinalIgnoreCase)) {
+              var result = MessageBox.Show(
+                "The directory is not empty. File will be overwritten." + Environment.NewLine +
+                "Are you sure you want to continue?",
+                "Project Directory not empty",
+                MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.No);
+              if (result == MessageBoxResult.No)
+                return true; // don't save, but mark the Save operation as handled
+              break;
+            }
+          }
+        }
+        textView.SaveToDisk(language, new[] { this }, options, dlg.FileName);
+      }
+      return true;
+    }
+  }
 
-	[ExportContextMenuEntryAttribute(Header = "_Remove", Icon = "images/Delete.png")]
-	sealed class RemoveAssembly : IContextMenuEntry
-	{
-		public bool IsVisible(TextViewContext context)
-		{
-			if (context.SelectedTreeNodes == null)
-				return false;
-			return context.SelectedTreeNodes.All(n => n is AssemblyTreeNode);
-		}
+  [ExportContextMenuEntryAttribute(Header = "_Remove", Icon = "images/Delete.png")]
+  sealed class RemoveAssembly : IContextMenuEntry
+  {
+    public bool IsVisible(TextViewContext context)
+    {
+      if (context.SelectedTreeNodes == null)
+        return false;
+      return context.SelectedTreeNodes.All(n => n is AssemblyTreeNode);
+    }
 
-		public bool IsEnabled(TextViewContext context)
-		{
-			return true;
-		}
+    public bool IsEnabled(TextViewContext context)
+    {
+      return true;
+    }
 
-		public void Execute(TextViewContext context)
-		{
-			if (context.SelectedTreeNodes == null)
-				return;
-			foreach (var node in context.SelectedTreeNodes) {
-				node.Delete();
-			}
-		}
-	}
+    public void Execute(TextViewContext context)
+    {
+      if (context.SelectedTreeNodes == null)
+        return;
+      foreach (var node in context.SelectedTreeNodes) {
+        node.Delete();
+      }
+    }
+  }
+
+  [ExportContextMenuEntryAttribute(Header = "Sort A to Z")]
+  sealed class SortAssemblyAscending : IContextMenuEntry
+  {
+    public bool IsVisible(TextViewContext context)
+    {
+      if (context.SelectedTreeNodes == null)
+        return false;
+      return context.SelectedTreeNodes.All(n => n is AssemblyTreeNode);
+    }
+
+    public bool IsEnabled(TextViewContext context)
+    {
+      return true;
+    }
+
+    public void Execute(TextViewContext context)
+    {
+      var children = context.TreeView.Root.Children.OrderBy(n => n.Text).ToList();
+      context.TreeView.Root.Children.Clear();
+      context.TreeView.Root.Children.AddRange(children);
+    }
+  }
+
+  [ExportContextMenuEntryAttribute(Header = "Sort Z to A")]
+  sealed class SortAssemblyDescending : IContextMenuEntry
+  {
+    public bool IsVisible(TextViewContext context)
+    {
+      if (context.SelectedTreeNodes == null)
+        return false;
+      return context.SelectedTreeNodes.All(n => n is AssemblyTreeNode);
+    }
+
+    public bool IsEnabled(TextViewContext context)
+    {
+      return true;
+    }
+
+    public void Execute(TextViewContext context)
+    {
+      var children = context.TreeView.Root.Children.OrderByDescending(n => n.Text).ToList();
+      context.TreeView.Root.Children.Clear();
+      context.TreeView.Root.Children.AddRange(children);
+    }
+  }
 }

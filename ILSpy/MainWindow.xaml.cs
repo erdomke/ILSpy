@@ -38,6 +38,9 @@ using ICSharpCode.ILSpy.XmlDoc;
 using ICSharpCode.TreeView;
 using Microsoft.Win32;
 using Mono.Cecil;
+using WinInterop = System.Windows.Interop;
+using System.Runtime.InteropServices;
+using System.Windows.Shapes;
 
 namespace ICSharpCode.ILSpy
 {
@@ -93,8 +96,184 @@ namespace ICSharpCode.ILSpy
 			ContextMenuProvider.Add(treeView, decompilerTextView);
 			
 			this.Loaded += new RoutedEventHandler(MainWindow_Loaded);
+      this.SourceInitialized += new EventHandler(win_SourceInitialized);
 		}
-		
+
+    #region Sizing Event Handlers
+    private void AttachToVisualTree()
+    {
+      // Resizers
+      if (ResizeMode != ResizeMode.NoResize)
+      {
+        var sResizer = GetChildControl<Rectangle>("PART_SResizer");
+        if (sResizer != null)
+        {
+          sResizer.MouseDown += OnSizeSouth;
+        }
+
+        var eResizer = GetChildControl<Rectangle>("PART_EResizer");
+        if (eResizer != null)
+        {
+          eResizer.MouseDown += OnSizeEast;
+        }
+
+        var wResizer = GetChildControl<Rectangle>("PART_WResizer");
+        if (wResizer != null)
+        {
+          wResizer.MouseDown += OnSizeWest;
+        }
+
+        var seResizer = GetChildControl<Rectangle>("PART_SEResizer");
+        if (seResizer != null)
+        {
+          seResizer.MouseDown += OnSizeSouthEast;
+        }
+
+        var swResizer = GetChildControl<Rectangle>("PART_SWResizer");
+        if (swResizer != null)
+        {
+          swResizer.MouseDown += OnSizeSouthWest;
+        }
+
+        var neResizer = GetChildControl<Rectangle>("PART_NEResizer");
+        if (neResizer != null)
+        {
+          neResizer.MouseDown += OnSizeNorthEast;
+        }
+
+        var nwResizer = GetChildControl<Rectangle>("PART_NWResizer");
+        if (nwResizer != null)
+        {
+          nwResizer.MouseDown += OnSizeNorthWest;
+        }
+      }
+    }
+
+    protected T GetChildControl<T>(string ctrlName) where T : DependencyObject
+    {
+      T ctrl = GetTemplateChild(ctrlName) as T;
+      return ctrl;
+    }
+
+    private void OnSizeSouth(object sender, MouseButtonEventArgs e)
+    {
+      DragSize(_handle, SizingAction.South);
+    }
+
+    private void OnSizeNorth(object sender, MouseButtonEventArgs e)
+    {
+      DragSize(_handle, SizingAction.North);
+    }
+
+    private void OnSizeEast(object sender, MouseButtonEventArgs e)
+    {
+      DragSize(_handle, SizingAction.East);
+    }
+
+    private void OnSizeWest(object sender, MouseButtonEventArgs e)
+    {
+      DragSize(_handle, SizingAction.West);
+    }
+
+    private void OnSizeNorthWest(object sender, MouseButtonEventArgs e)
+    {
+      DragSize(_handle, SizingAction.NorthWest);
+    }
+
+    private void OnSizeNorthEast(object sender, MouseButtonEventArgs e)
+    {
+      DragSize(_handle, SizingAction.NorthEast);
+    }
+
+    private void OnSizeSouthEast(object sender, MouseButtonEventArgs e)
+    {
+      DragSize(_handle, SizingAction.SouthEast);
+    }
+
+    private void OnSizeSouthWest(object sender, MouseButtonEventArgs e)
+    {
+      DragSize(_handle, SizingAction.SouthWest);
+    }
+
+    private enum SizingAction
+    {
+      North = 3,
+      South = 6,
+      East = 2,
+      West = 1,
+      NorthEast = 5,
+      NorthWest = 4,
+      SouthEast = 8,
+      SouthWest = 7
+    }
+
+
+    private const int SC_SIZE = 0xF000;
+    private const int WM_SYSCOMMAND = 0x112;
+
+    private void DragSize(IntPtr handle, SizingAction sizingAction)
+    {
+      if (Mouse.LeftButton == MouseButtonState.Pressed)
+      {
+        NativeMethods.SendMessage(handle, WM_SYSCOMMAND, (IntPtr)(SC_SIZE + sizingAction), IntPtr.Zero);
+        NativeMethods.SendMessage(handle, 514, IntPtr.Zero, IntPtr.Zero);
+      }
+    }
+
+    #endregion
+
+    #region "Fix Maximize Problem"
+    private IntPtr _handle;
+    void win_SourceInitialized(object sender, EventArgs e)
+    {
+      _handle = (new WinInterop.WindowInteropHelper(this)).Handle;
+      WinInterop.HwndSource.FromHwnd(_handle).AddHook(new WinInterop.HwndSourceHook(WindowProc));
+    }
+
+    private static System.IntPtr WindowProc(
+              System.IntPtr hwnd,
+              int msg,
+              System.IntPtr wParam,
+              System.IntPtr lParam,
+              ref bool handled)
+    {
+      switch (msg)
+      {
+        case 0x0024:
+          WmGetMinMaxInfo(hwnd, lParam);
+          handled = true;
+          break;
+      }
+
+      return (System.IntPtr)0;
+    }
+
+    private static void WmGetMinMaxInfo(System.IntPtr hwnd, System.IntPtr lParam)
+    {
+
+      MINMAXINFO mmi = (MINMAXINFO)Marshal.PtrToStructure(lParam, typeof(MINMAXINFO));
+
+      // Adjust the maximized size and position to fit the work area of the correct monitor
+      int MONITOR_DEFAULTTONEAREST = 0x00000002;
+      System.IntPtr monitor = NativeMethods.MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+
+      if (monitor != System.IntPtr.Zero)
+      {
+
+        MONITORINFO monitorInfo = new MONITORINFO();
+        NativeMethods.GetMonitorInfo(monitor, monitorInfo);
+        RECT rcWorkArea = monitorInfo.rcWork;
+        RECT rcMonitorArea = monitorInfo.rcMonitor;
+        mmi.ptMaxPosition.x = Math.Abs(rcWorkArea.left - rcMonitorArea.left);
+        mmi.ptMaxPosition.y = Math.Abs(rcWorkArea.top - rcMonitorArea.top);
+        mmi.ptMaxSize.x = Math.Abs(rcWorkArea.right - rcWorkArea.left);
+        mmi.ptMaxSize.y = Math.Abs(rcWorkArea.bottom - rcWorkArea.top);
+      }
+
+      Marshal.StructureToPtr(mmi, lParam, true);
+    }
+#endregion
+
 		void SetWindowBounds(Rect bounds)
 		{
 			this.Left = bounds.Left;
@@ -609,16 +788,27 @@ namespace ICSharpCode.ILSpy
 			
 			SharpTreeNode lastNode = null;
 			foreach (string file in fileNames) {
-				var asm = assemblyList.OpenAssembly(file);
-				if (asm != null) {
-					var node = assemblyListTreeNode.FindAssemblyNode(asm);
-					if (node != null && focusNode) {
-						treeView.SelectedItems.Add(node);
-						lastNode = node;
-					}
-				}
-				if (lastNode != null && focusNode)
-					treeView.FocusNode(lastNode);
+        switch (System.IO.Path.GetExtension(file).ToLowerInvariant())
+        {
+          case ".vb":
+            decompilerTextView.DisplayText(File.ReadAllText(file), new VB.VBLanguage());
+            break;
+          case ".cs":
+            decompilerTextView.DisplayText(File.ReadAllText(file), new CSharpLanguage());
+            break;
+          default:
+            var asm = assemblyList.OpenAssembly(file);
+				    if (asm != null) {
+					    var node = assemblyListTreeNode.FindAssemblyNode(asm);
+					    if (node != null && focusNode) {
+						    treeView.SelectedItems.Add(node);
+						    lastNode = node;
+					    }
+				    }
+				    if (lastNode != null && focusNode)
+					    treeView.FocusNode(lastNode);
+            break;
+        }
 			}
 		}
 		
@@ -826,13 +1016,13 @@ namespace ICSharpCode.ILSpy
 			treeView.UnselectAll();
 		}
 		
-		public void SetStatus(string status, Brush foreground)
-		{
-			if (this.statusBar.Visibility == Visibility.Collapsed)
-				this.statusBar.Visibility = Visibility.Visible;
-			this.StatusLabel.Foreground = foreground;
-			this.StatusLabel.Text = status;
-		}
+    //public void SetStatus(string status, Brush foreground)
+    //{
+    //  if (this.statusBar.Visibility == Visibility.Collapsed)
+    //    this.statusBar.Visibility = Visibility.Visible;
+    //  this.StatusLabel.Foreground = foreground;
+    //  this.StatusLabel.Text = status;
+    //}
 		
 		public ItemCollection GetMainMenuItems()
 		{
@@ -843,5 +1033,89 @@ namespace ICSharpCode.ILSpy
 		{
 			return toolBar.Items;
 		}
+
+    private void toolBar_Loaded(object sender, RoutedEventArgs e)
+    {
+      ToolBar toolBar = sender as ToolBar;
+      var overflowGrid = toolBar.Template.FindName("OverflowGrid", toolBar) as FrameworkElement;
+      if (overflowGrid != null)
+      {
+        overflowGrid.Visibility = Visibility.Collapsed;
+      }
+      var mainPanelBorder = toolBar.Template.FindName("MainPanelBorder", toolBar) as FrameworkElement;
+      if (mainPanelBorder != null)
+      {
+        mainPanelBorder.Margin = new Thickness();
+      }
+    }
+
+    private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+      if (e.ChangedButton == MouseButton.Left)
+        if (e.ClickCount == 2)
+        {
+          AdjustWindowSize();
+        }
+        else if (e.LeftButton == MouseButtonState.Pressed)
+        {
+          Application.Current.MainWindow.DragMove();
+        }
+    }
+
+
+    /// <summary>
+    /// Adjusts the WindowSize to correct parameters when Maximize button is clicked
+    /// </summary>
+    private void AdjustWindowSize()
+    {
+      if (this.WindowState == WindowState.Maximized)
+      {
+        this.WindowState = WindowState.Normal;
+        MaxButton.Content = "1";
+      }
+      else
+      {
+        this.WindowState = WindowState.Maximized;
+        MaxButton.Content = "2";
+      }
+
+    }
+
+
+    /// <summary>
+    /// CloseButton_Clicked
+    /// </summary>
+    private void CloseButton_Click(object sender, RoutedEventArgs e)
+    {
+      Application.Current.Shutdown();
+    }
+
+    /// <summary>
+    /// MaximizedButton_Clicked
+    /// </summary>
+    private void MaxButton_Click(object sender, RoutedEventArgs e)
+    {
+      AdjustWindowSize();
+    }
+
+    /// <summary>
+    /// Minimized Button_Clicked
+    /// </summary>
+    private void MinButton_Click(object sender, RoutedEventArgs e)
+    {
+      this.WindowState = WindowState.Minimized;
+    }
+
+    private void Window_StateChanged(object sender, EventArgs e)
+    {
+      if (this.WindowState == System.Windows.WindowState.Maximized)
+      {
+        gridPrimary.Margin = new Thickness(0);
+      }
+      else
+      {
+        gridPrimary.Margin = new Thickness(10);
+      }
+    }
 	}
 }

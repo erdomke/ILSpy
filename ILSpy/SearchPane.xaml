@@ -8,33 +8,31 @@
 			<RowDefinition Height="Auto"  />
 			<RowDefinition Height="*" />
 		</Grid.RowDefinitions>
-		<Border BorderThickness="0,0,0,1" BorderBrush="{DynamicResource {x:Static SystemColors.ControlLightBrushKey}}" Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
-			<Grid Height="23">
-				<Grid.ColumnDefinitions>
-					<ColumnDefinition Width="*" />
-					<ColumnDefinition Width="Auto" />
-				</Grid.ColumnDefinitions>
-				<controls:SearchBox x:Name="searchBox" DockPanel.Dock="Top" Grid.Column="0" Grid.Row="0" Margin="1"
+        <Grid Height="23" Background="White">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <controls:SearchBox x:Name="searchBox" DockPanel.Dock="Top" Grid.Column="0" Grid.Row="0" Margin="1"
 						PreviewKeyDown="SearchBox_PreviewKeyDown"
 						Text="{Binding SearchTerm, ElementName=self}" ToolTip="Search" UpdateDelay="0:0:0.1"
 						WatermarkColor="Gray" WatermarkText="Search" />
-				<StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal">
-					<Label Margin="0,-1">Search _for:</Label>
-					<ComboBox Width="100" Name="searchModeComboBox" Margin="1"
+            <StackPanel Grid.Column="1" Grid.Row="0" Orientation="Horizontal">
+                <Label Margin="0,-1">Search _for:</Label>
+                <ComboBox Width="100" Name="searchModeComboBox" Margin="1"
 							SelectionChanged="SearchModeComboBox_SelectionChanged">
-						<ComboBox.ItemTemplate>
-							<DataTemplate>
-								<StackPanel Orientation="Horizontal">
-									<Image Height="16" Margin="0,0,4,0" Width="16" Source="{Binding Image}" />
-									<TextBlock Text="{Binding Name}" />
-								</StackPanel>
-							</DataTemplate>
-						</ComboBox.ItemTemplate>
-					</ComboBox>
-				</StackPanel>
-			</Grid>
-		</Border>
-		<ListBox Grid.Row="1" BorderThickness="0,0,0,0" HorizontalContentAlignment="Stretch" KeyDown="ListBox_KeyDown"
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <Image Height="16" Margin="0,0,4,0" Width="16" Source="{Binding Image}" />
+                                <TextBlock Text="{Binding Name}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </StackPanel>
+        </Grid>
+        <ListBox Grid.Row="1" BorderThickness="0,0,0,0" HorizontalContentAlignment="Stretch" KeyDown="ListBox_KeyDown"
 				MouseDoubleClick="ListBox_MouseDoubleClick" Name="listBox" SelectionMode="Single">
 			<ListBox.ItemTemplate>
 				<DataTemplate>
