@@ -41,6 +41,7 @@ using Mono.Cecil;
 using WinInterop = System.Windows.Interop;
 using System.Runtime.InteropServices;
 using System.Windows.Shapes;
+using ICSharpCode.NRefactory.TypeSystem;
 
 namespace ICSharpCode.ILSpy
 {
@@ -791,10 +792,8 @@ namespace ICSharpCode.ILSpy
         switch (System.IO.Path.GetExtension(file).ToLowerInvariant())
         {
           case ".vb":
-            decompilerTextView.DisplayText(File.ReadAllText(file), new VB.VBLanguage());
-            break;
           case ".cs":
-            decompilerTextView.DisplayText(File.ReadAllText(file), new CSharpLanguage());
+            decompilerTextView.DisplayFile(file, assemblyList.GetAssemblies().Select(a => a.AssemblyDefinition));
             break;
           default:
             var asm = assemblyList.OpenAssembly(file);
